@@ -1,11 +1,13 @@
 <?php
 
 namespace App\Entity;
+use Doctrine\ORM\Mapping as ORM;
 
 use DateTimeInterface;
 
+
 /**
- * @ORM\Entity(repositoryClass=ContactRepository::class)
+ * @ORM\Entity(repositoryClass=App\Repository\ContactRepository::class)
  */
 class Contact
 {
@@ -40,6 +42,12 @@ class Contact
      * @ORM\Column(type="datetime")
      */
     private $updated_at;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Status::class, inversedBy="contacts")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $status_id;
 
     public function getId(): ?int
     {
@@ -82,18 +90,6 @@ class Contact
         return $this;
     }
 
-    public function getStatus(): ?int
-    {
-        return $this->status;
-    }
-
-    public function setStatus(int $status): self
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
     public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updated_at;
@@ -102,6 +98,18 @@ class Contact
     public function setUpdatedAt(DateTimeInterface $updated_at): self
     {
         $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+    public function getStatus(): ?Status
+    {
+        return $this->status_id;
+    }
+
+    public function setStatus(?Status $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }

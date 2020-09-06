@@ -1,0 +1,10 @@
+<table>
+    {% for contact in contacts %}
+        <tr>
+            <td>{{ contact.id }}</td>
+            <td>{{ contact.user }}</td>
+            <td>{{ contact.message }}</td>
+            <td>{{ contact.updatedAt |date('d-m-Y H:m')  }}</td>
+        </tr>
+    {% endfor %}
+</table>
