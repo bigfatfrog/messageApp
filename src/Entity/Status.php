@@ -25,13 +25,13 @@ class Status
     private $description;
 
     /**
-     * @ORM\OneToMany(targetEntity=Contact::class, mappedBy="status_id", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="status")
      */
-    private $contacts;
+    private $messages;
 
     public function __construct()
     {
-        $this->contacts = new ArrayCollection();
+         $this->messages = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -52,30 +52,30 @@ class Status
     }
 
     /**
-     * @return Collection|Contact[]
+     * @return Collection|Message[]
      */
-    public function getContacts(): Collection
+    public function getTexts(): Collection
     {
-        return $this->contacts;
+        return $this->messages;
     }
 
-    public function addContact(Contact $contact): self
+    public function addMessage(Message $message): self
     {
-        if (!$this->contacts->contains($contact)) {
-            $this->contacts[] = $contact;
-            $contact->setStatusId($this);
+        if (!$this->messages->contains($message)) {
+            $this->messages[] = $message;
+            $message->setStatus($this);
         }
 
         return $this;
     }
 
-    public function removeContact(Contact $contact): self
+    public function removeMessage(Message $message): self
     {
-        if ($this->contacts->contains($contact)) {
-            $this->contacts->removeElement($contact);
+        if ($this->messages->contains($message)) {
+            $this->messages->removeElement($message);
             // set the owning side to null (unless already changed)
-            if ($contact->getStatusId() === $this) {
-                $contact->setStatusId(null);
+            if ($message->getStatus() === $this) {
+                $message->setStatus(null);
             }
         }
 

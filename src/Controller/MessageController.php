@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\Contact;
-use App\Form\ContactType;
+use App\Entity\Message;
+use App\Form\MessageType;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,13 +12,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 
 
-class ContactController extends AbstractController
+class MessageController extends AbstractController
 {
     /** @var EntityManagerInterface */
     private $entityManager;
 
     /** @var \Doctrine\Common\Persistence\ObjectRepository */
-    private $contactRepository;
+    private $messageRepository;
 
     /**
      * @param EntityManagerInterface $entityManager
@@ -26,17 +26,17 @@ class ContactController extends AbstractController
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
-        $this->contactRepository = $entityManager->getRepository('App\Entity\Contact');
+        $this->messageRepository = $entityManager->getRepository('App\Entity\Message');
     }
 
     /**
-     * @Route("/contact", name="contact")
+     * @Route("/message", name="message")
      */
     public function index(Request $request)
     {
 
 
-        $form = $this->createForm(ContactType::class);
+        $form = $this->createForm(MessageType::class);
 
         if ($request->isMethod('POST')) {
             $form->submit($request->request->get($form->getName()));
@@ -47,20 +47,20 @@ class ContactController extends AbstractController
                 $message = $form->get('message')->getData();
                 $phone = $form->get('phone')->getData();
 
-                $contact = new Contact();
-                $contact->setUser('Peter Griffin');
-                $contact->setPhone($phone);
-                $contact->setMessage($message);
-                $contact->setStatus(3);
-                $contact->setUpdatedAt(new DateTime());
-                $this->entityManager->persist($contact);
+                $message = new Message();
+                $message->setUser('Peter Griffin');
+                $message->setPhone($phone);
+                $message->setText($message);
+                $message->setStatus(3);
+                $message->setUpdatedAt(new DateTime());
+                $this->entityManager->persist($message);
                 $this->entityManager->flush();
 
             }
         }
 
-        $contacts = $this->contactRepository->findAll();
-       var_dump($contacts);
-        return $this->render('contact/index.html.twig', ['contact_form' => $form->createView(), 'contacts' => $contacts]);
+        $messages = $this->messageRepository->findAll();
+
+        return $this->render('message/index.html.twig', ['message_form' => $form->createView(), 'messages' => $messages]);
     }
 }

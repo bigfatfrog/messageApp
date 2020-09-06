@@ -1,0 +1,11 @@
+<table>
+    {% for message in messages %}
+        <tr>
+            <td>{{ message.id }}</td>
+            <td>{{ message.user.name }}</td>
+            <td>{{ message.text }}</td>
+            <td>{{ message.status.description }}</td>
+            <td>{{ message.updatedAt |date('d-m-Y H:m')  }}</td>
+        </tr>
+    {% endfor %}
+</table>
