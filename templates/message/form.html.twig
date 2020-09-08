@@ -1,8 +1,13 @@
-<div>
-    {{ form_start(message_form) }}
-    {{ form_widget(message_form) }}
+<div class="card ml-auto mr-auto mt-5 mb-5 message-card" >
+    <div class="card-header">
+        Submit an new message
+    </div>
+    <div class="card-body">
+        {{ form_start(message_form) }}
+        {{ form_widget(message_form) }}
 
-    <input type="submit" value="Send" class="btn btn-success"/>
+        <input type="submit" value="Send" class="btn btn-success"{% if not user %} disabled {% endif %}  />
 
-    {{ form_end(message_form) }}
+        {{ form_end(message_form) }}
+    </div>
 </div>

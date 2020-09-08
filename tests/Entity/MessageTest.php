@@ -3,14 +3,24 @@
 namespace App\Tests\Entity;
 
 use App\Entity\Message;
+use App\Repository\StatusRepository;
+use App\Repository\UserRepository;
+
 use DateTime;
 use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 
-class MessageTest extends TestCase
+class MessageTest extends KernelTestCase
 {
-    protected function setUp(): void
+
+    public function setUp(): void
     {
+        $kernel = self::bootKernel();
+
+        $this->statusRepository = $kernel->getContainer()->get(StatusRepository::class);
+        $this->userRepository = $kernel->getContainer()->get(UserRepository::class);
+
         $this->message = new Message();
     }
 
@@ -32,7 +42,7 @@ class MessageTest extends TestCase
 
     public function testSetUser()
     {
-        $userTest = 'jim';
+        $userTest = $this->userRepository->findOneBy(array('username' => 'jim'));
         $this->message->setUser($userTest);
         $userResult = $this->message->getUser();
         $this->assertEquals($userTest, $userResult);
@@ -40,7 +50,7 @@ class MessageTest extends TestCase
 
     public function testSetStatus()
     {
-        $statusTest = 1;
+        $statusTest = $this->statusRepository->findOneBy(array('description' => 'failed'));
         $this->message->setStatus($statusTest);
         $statusResult = $this->message->getStatus();
         $this->assertEquals($statusTest, $statusResult);

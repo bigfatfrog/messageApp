@@ -15,26 +15,38 @@ class AppFixtures extends Fixture
     public function load(ObjectManager $manager)
     {
         $status1 = new Status();
-        $status1->setDescription('Awaiting');
+        $status1->setDescription('awaiting');
         $manager->persist($status1);
         $status2 = new Status();
-        $status2->setDescription('Sent');
+        $status2->setDescription('sent');
         $manager->persist($status2);
         $status3 = new Status();
-        $status3->setDescription('Error');
+        $status3->setDescription('queued');
         $manager->persist($status3);
+        $status = new Status();
+        $status->setDescription('delivered');
+        $manager->persist($status);
+        $status = new Status();
+        $status->setDescription('undelivered');
+        $manager->persist($status);
+        $status = new Status();
+        $status->setDescription('failed');
+        $manager->persist($status);
 
         $jim = new User();
         $jim->setName('Jim Bowen');
-        $jim->setPassword(base64_encode('password'));
+        $jim->setPassword(password_hash('password', PASSWORD_DEFAULT));
+        $jim->setUsername('jim');
         $manager->persist($jim);
         $brian = new User();
         $brian->setName('Brian Giffin');
-        $brian->setPassword(base64_encode('password'));
+        $brian->setPassword(password_hash('password', PASSWORD_DEFAULT));
+        $brian->setUsername('brian');
         $manager->persist($brian);
         $lulu = new User();
         $lulu->setName('Lulu');
-        $lulu->setPassword(base64_encode('password'));
+        $lulu->setPassword(password_hash('password', PASSWORD_DEFAULT));
+        $lulu->setUsername('lulu');
         $manager->persist($lulu);
 
         $manager->flush();
