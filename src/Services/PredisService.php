@@ -11,16 +11,17 @@ class PredisService
 
     private static $redisClient;
 
-    public static function client(){
-        if(!isset(self::$redisClient)){
-            self::$redisClient = new Client();
-        }
-        return self::$redisClient;
-    }
-
     public function set($key, $value)
     {
         self::client()->set($key, $value);
+    }
+
+    public static function client()
+    {
+        if (!isset(self::$redisClient)) {
+            self::$redisClient = new Client();
+        }
+        return self::$redisClient;
     }
 
     public function get($key)

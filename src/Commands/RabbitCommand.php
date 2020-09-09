@@ -13,7 +13,7 @@ class RabbitCommand extends Command
 {
     protected static $defaultName = 'app:rabbit-receive';
 
-    public function __construct( RabbitService $rabbitService)
+    public function __construct(RabbitService $rabbitService)
     {
         parent::__construct();
 

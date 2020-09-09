@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Entity\Message;
 use App\Repository\MessageRepository;
 use App\Repository\StatusRepository;
+use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -16,10 +17,19 @@ use DateTime;
 class RabbitService
 {
 
-    private $queue = 'sms';
     private static $rabbitConnection;
     private static $twillo;
-    public $messageRepository;
+    private $queue = 'sms';
+    /** @var EntityManagerInterface */
+    private $entityManager;
+
+    /** @var ObjectRepository */
+    private $messageRepository;
+
+    /** @var ObjectRepository */
+    private $statusRepository;
+
+    private $predisService;
 
     public function __construct(EntityManagerInterface $entityManager, MessageRepository $messageRepository,
                                 StatusRepository $statusRepository, PredisService $predisService)
@@ -45,7 +55,7 @@ class RabbitService
             echo ' [x] Received ', $msg->body, "\n";
 
             $message = $this->messageRepository->find($msg->body);
-            if($message){
+            if ($message) {
                 $this->processMessage($message);
             }
 
@@ -60,6 +70,18 @@ class RabbitService
         $channel->close();
         $connection->close();
 
+    }
+
+    private static function getConnection()
+    {
+        if (!isset(self::$rabbitConnection)) {
+            $host = $_ENV['RABBIT_HOST'];
+            $port = $_ENV['RABBIT_PORT'];
+            $user = $_ENV['RABBIT_USER'];
+            $password = $_ENV['RABBIT_PASSWORD'];
+            self::$rabbitConnection = new AMQPStreamConnection($host, $port, $user, $password);
+        }
+        return self::$rabbitConnection;
     }
 
     public function processMessage(Message $message)
@@ -81,6 +103,35 @@ class RabbitService
         return $message;
     }
 
+    public function sendSMS($phone, $text)
+    {
+
+        $client = self::twilloClient();
+        $number = $_ENV['TWILLO_NUMBER'];
+        $message = $client->messages->create(
+            $phone, // Text this number
+            [
+                'from' => $number, // From a valid Twilio number
+                'body' => $text
+            ]
+        );
+
+        return $message;
+    }
+
+    public static function twilloClient()
+    {
+
+        if (!isset(self::$twillo)) {
+            $sid = $_ENV['TWILLO_SID']; // Your Account SID from www.twilio.com/console
+            $token = $_ENV['TWILLO_TOKEN']; // Your Auth Token from www.twilio.com/console
+
+            self::$twillo = new Client($sid, $token);
+        }
+
+        return self::$twillo;
+    }
+
     public function send($text)
     {
 
@@ -96,33 +147,6 @@ class RabbitService
         $connection->close();
 
         return $result;
-    }
-
-    private static function getConnection()
-    {
-        if (!isset(self::$rabbitConnection)) {
-            $host = $_ENV['RABBIT_HOST'];
-            $port = $_ENV['RABBIT_PORT'];
-            $user = $_ENV['RABBIT_USER'];
-            $password = $_ENV['RABBIT_PASSWORD'];
-            self::$rabbitConnection = new AMQPStreamConnection($host, $port, $user, $password);
-        }
-        return self::$rabbitConnection;
-    }
-
-    public function sendSMS($phone, $text){
-
-        $client = self::twilloClient();
-        $number = $_ENV['TWILLO_NUMBER'];
-        $message = $client->messages->create(
-            $phone, // Text this number
-            [
-                'from' => $number, // From a valid Twilio number
-                'body' => $text
-            ]
-        );
-
-        return $message;
     }
 
     public function getSMS(Message $message)
@@ -142,18 +166,5 @@ class RabbitService
             $this->entityManager->flush();
         }
         return $message;
-    }
-
-
-    public static function twilloClient() {
-
-        if(!isset(self::$twillo)) {
-            $sid = $_ENV['TWILLO_SID']; // Your Account SID from www.twilio.com/console
-            $token = $_ENV['TWILLO_TOKEN']; // Your Auth Token from www.twilio.com/console
-
-            self::$twillo = new Client($sid, $token);
-        }
-
-        return self::$twillo;
     }
 }

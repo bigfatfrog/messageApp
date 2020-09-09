@@ -7,12 +7,13 @@ use App\Form\MessageType;
 use App\Services\MessageService;
 use App\Services\RabbitService;
 use DateTime;
+use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
-
 
 
 class MessageController extends AbstractController
@@ -20,14 +21,14 @@ class MessageController extends AbstractController
     /** @var EntityManagerInterface */
     private $entityManager;
 
-    /** @var \Doctrine\Common\Persistence\ObjectRepository */
+    /** @var ObjectRepository */
     private $messageRepository;
 
     /**
      * @param EntityManagerInterface $entityManager
      */
     public function __construct(EntityManagerInterface $entityManager, MessageService $messageService,
-                                RabbitService $rabbitService )
+                                RabbitService $rabbitService)
     {
         $this->entityManager = $entityManager;
         $this->messageRepository = $entityManager->getRepository('App\Entity\Message');
@@ -41,7 +42,7 @@ class MessageController extends AbstractController
     public function index(Request $request)
     {
 
-        $user  = $this->getUser();
+        $user = $this->getUser();
 
         $form = $this->createForm(MessageType::class);
 
@@ -56,11 +57,11 @@ class MessageController extends AbstractController
 
                 try {
                     $message = $this->messageService->createMessage($user, $phone, $text);
-                } catch (\Exception $e){
+                } catch (Exception $e) {
                     // TODO: handle the exception
                 }
 
-                if(isset($message)){
+                if (isset($message)) {
                     $this->rabbitService->send($message->getId());
                 }
             }
@@ -70,7 +71,7 @@ class MessageController extends AbstractController
         $messages = $this->messageRepository->findAll();
 
         //do we need to do an update
-        if(isset($_REQUEST['refresh'])) {
+        if (isset($_REQUEST['refresh'])) {
 
             foreach ($messages as $message) {
                 if ($message->getStatus() == 'queued' || $message->getStatus() == 'awiating') {

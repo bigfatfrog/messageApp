@@ -31,7 +31,7 @@ class Status
 
     public function __construct()
     {
-         $this->messages = new ArrayCollection();
+        $this->messages = new ArrayCollection();
     }
 
     public function getId(): ?int
