@@ -63,4 +63,12 @@ class MessageTest extends KernelTestCase
         $updatedAtResult = $this->message->getUpdatedAt();
         $this->assertEquals($updatedAtTest, $updatedAtResult);
     }
+
+    public function testSid()
+    {
+        $sidTest = "123456789";
+        $this->message->setSid($sidTest);
+        $sidResult = $this->message->getSid();
+        $this->assertEquals($sidTest, $sidResult);
+    }
 }

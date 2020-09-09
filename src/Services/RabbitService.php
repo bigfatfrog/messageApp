@@ -20,12 +20,14 @@ class RabbitService
     private static $rabbitConnection;
     public $messageRepository;
 
-    public function __construct(EntityManagerInterface $entityManager,MessageRepository $messageRepository,
-                                StatusRepository $statusRepository){
+    public function __construct(EntityManagerInterface $entityManager, MessageRepository $messageRepository,
+                                StatusRepository $statusRepository, PredisService $predisService)
+    {
 
         $this->entityManager = $entityManager;
         $this->messageRepository = $messageRepository;
         $this->statusRepository = $statusRepository;
+        $this->prdisService = $predisService;
     }
 
     public function receive($wait = true)
@@ -59,16 +61,19 @@ class RabbitService
 
     }
 
-    public function processMessage(Message $message){
+    public function processMessage(Message $message)
+    {
         $phone = $message->getPhone();
         $text = $message->getText();
         echo "Sending message - number: $phone text: $text";
-        $statusDesc = $this->sendSMS($phone, $text);
+        $twilloMessage = $this->sendSMS($phone, $text);
+        $statusDesc = $twilloMessage->status;
         echo "SMS status:$statusDesc";
         $status = $this->statusRepository->findOneBy(array('description' => $statusDesc));
-        if($status) {
+        if ($status) {
             $message->setStatus($status);
             $message->setUpdatedAt(new DateTime());
+            $message->setSid($twilloMessage->sid);
             $this->entityManager->persist($message);
             $this->entityManager->flush();
         }
@@ -118,7 +123,15 @@ class RabbitService
             ]
         );
 
-        return $message->status;
+        return $message;
+    }
+
+    public function getSMS()
+    {
+        $sid = $_ENV['TWILLO_SID']; // Your Account SID from www.twilio.com/console
+        $token = $_ENV['TWILLO_TOKEN']; // Your Auth Token from www.twilio.com/console
+        $client = new Client($sid, $token);
+        var_dump($client->getMessages());
     }
 
 
