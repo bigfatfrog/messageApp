@@ -18,6 +18,7 @@ class RabbitService
 
     private $queue = 'sms';
     private static $rabbitConnection;
+    private static $twillo;
     public $messageRepository;
 
     public function __construct(EntityManagerInterface $entityManager, MessageRepository $messageRepository,
@@ -110,11 +111,9 @@ class RabbitService
     }
 
     public function sendSMS($phone, $text){
-        $sid = $_ENV['TWILLO_SID']; // Your Account SID from www.twilio.com/console
-        $token = $_ENV['TWILLO_TOKEN']; // Your Auth Token from www.twilio.com/console
-        $number = $_ENV['TWILLO_NUMBER'];
 
-        $client = new Client($sid, $token);
+        $client = self::twilloClient();
+        $number = $_ENV['TWILLO_NUMBER'];
         $message = $client->messages->create(
             $phone, // Text this number
             [
@@ -126,13 +125,35 @@ class RabbitService
         return $message;
     }
 
-    public function getSMS()
+    public function getSMS(Message $message)
     {
-        $sid = $_ENV['TWILLO_SID']; // Your Account SID from www.twilio.com/console
-        $token = $_ENV['TWILLO_TOKEN']; // Your Auth Token from www.twilio.com/console
-        $client = new Client($sid, $token);
-        var_dump($client->getMessages());
+        $client = self::twilloClient();
+
+        $twilloMessage = $client->messages($message->getSid())
+            ->fetch();
+
+        $statusDesc = $twilloMessage->status;
+        $status = $this->statusRepository->findOneBy(array('description' => $statusDesc));
+        if ($status) {
+            $message->setStatus($status);
+            $message->setUpdatedAt(new DateTime());
+            $message->setSid($twilloMessage->sid);
+            $this->entityManager->persist($message);
+            $this->entityManager->flush();
+        }
+        return $message;
     }
 
 
+    public static function twilloClient() {
+
+        if(!isset(self::$twillo)) {
+            $sid = $_ENV['TWILLO_SID']; // Your Account SID from www.twilio.com/console
+            $token = $_ENV['TWILLO_TOKEN']; // Your Auth Token from www.twilio.com/console
+
+            self::$twillo = new Client($sid, $token);
+        }
+
+        return self::$twillo;
+    }
 }

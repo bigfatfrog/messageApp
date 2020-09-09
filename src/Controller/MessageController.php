@@ -69,6 +69,16 @@ class MessageController extends AbstractController
 
         $messages = $this->messageRepository->findAll();
 
+        //do we need to do an update
+        if(isset($_REQUEST['refresh'])) {
+
+            foreach ($messages as $message) {
+                if ($message->getStatus() == 'queued' || $message->getStatus() == 'awiating') {
+                    $this->rabbitService->getSMS($message);
+                }
+            }
+        }
+
         $content = $this->render('message/index.html.twig',
             ['message_form' => $form->createView(), 'messages' => $messages, 'user' => $user]);
 

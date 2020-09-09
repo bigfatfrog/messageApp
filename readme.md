@@ -23,6 +23,11 @@ https://redis.io/download or if the os is windows then https://github.com/Micros
 ##Webserver
 The project root is /public. The is a web.config and .htaccess to handle the rewrites
 
+##ENV
+a .env file to be created - there is a .env.example to copy
+TWILLO creditials are needed and the DATABASE_URL and Rabbit credientials may need updating
+
+
 #RUNNING THE PROJECT
 ##from a node.js command prompt run:
 To start the message broker task:
@@ -36,3 +41,6 @@ Need to investigate why services need to be made public to test??
 ##Security
 Authenticaion middleware needs adding with pubically accessable route in an allow list
 At the moment IDOR of the post request is done by checking the user in the controller
+##RefreshMethod
+The method of refreshing/update the statuses is poor. It should make use of the Twillo webhook
+to auto update the database and ajax to refresh the browser screen
