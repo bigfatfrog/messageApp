@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Our Contact Form{% endblock title %}
+
+{% block body %}
+
+    <nav class="navbar navbar-expand-sm bg-light">
+
+        <!-- Links -->
+        <ul class="navbar-nav">
+
+            <li class="nav-item">
+                {% if not user %}
+                <a class="nav-link" href="/login">login</a>
+                {% else %}
+                    <a class="nav-link" href="/logout">logout</a>
+                {% endif %}
+            </li>
+
+        </ul>
+        {% if user %}
+        <div> {{user.name}}</div>
+        {% endif %}
+    </nav>
+
+    {% include 'message/form.html.twig' %}
+
+    {% include 'message/table.html.twig' %}
+
+{% endblock %}
